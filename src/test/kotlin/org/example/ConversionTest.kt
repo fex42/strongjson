@@ -19,26 +19,10 @@ class ConversionTest {
     @JvmInline
     value class StringType(val value: String)
 
-    data class StrongBean(val property1: StringType)
-
-    data class StrongBeanDTO(val property1: StringType) {
-        companion object {
-            @JvmStatic
-            @JsonCreator
-            fun create(s: String) = StrongBeanDTO(StringType(s))
-        }
-    }
-
     @JvmInline
     value class PaymentMethod(val method: String)
 
-    data class Payment(val method: PaymentMethod) {
-        companion object {
-            @JvmStatic
-            @JsonCreator
-            fun create(value: String) = Payment(PaymentMethod(value))
-        }
-    }
+    data class Payment(val Method: PaymentMethod)
 
     data class PaymentDto(val method: PaymentMethod) {
         companion object {
@@ -68,23 +52,19 @@ class ConversionTest {
 
     @Test
     fun `Strong to JSON`() {
-        val sb = StrongBean(StringType("dings"))
-        val json = mapper.writeValueAsString(sb)
-        assertThat(json).isEqualTo("{\"property1\":\"dings\"}")
+        val sb = Payment(PaymentMethod("dings"))
+        val json2 = mapper.writeValueAsString(sb)
 
-        val payment = Payment(PaymentMethod("PAYPAL"))
-        val json2 = mapper.writeValueAsString(payment)
-
-        assertThat(json2).isEqualTo("{\"method\":\"PAYPAL\"}")
+        assertThat(json2).isEqualTo("{\"method\":\"dings\"}")
     }
 
     @Test
     fun `JSON to Strong (Payment)`() {
-        val json = "{\"method\":\"PAYPAL\"}"
+        val json1 = "{\"method\":\"bla\"}"
 
-        val result =  assertDoesNotThrow { mapper.readValue<PaymentDto>(json) }
+        val result =  assertDoesNotThrow { mapper.readValue<PaymentDto>(json1) }
 
         assertThat(result).isNotNull()
-        assertThat(result.method).isEqualTo(PaymentMethod("PAYPAL"))
+        assertThat(result.method).isEqualTo(PaymentMethod("bla"))
     }
 }
